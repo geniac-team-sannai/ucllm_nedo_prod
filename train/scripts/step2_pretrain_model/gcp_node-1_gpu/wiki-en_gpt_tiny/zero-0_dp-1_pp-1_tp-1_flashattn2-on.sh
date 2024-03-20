@@ -60,6 +60,16 @@ seq_len=2048
 ## We changed min_lr to a lower number (1.0e-6), which we found is able to
 ## provide better zero-shot eval results.
 
+## GPT-3 TinyTiny (10M?)
+model_size=0.01
+num_layers=6
+hidden_size=256
+num_attn_heads=4
+global_batch_size=128
+lr=6.0e-4
+min_lr=1.0e-6
+init_std=0.02
+
 ## GPT-3 Small 125M
 model_size=0.125
 num_layers=12
@@ -233,26 +243,26 @@ host="${HOSTNAME}"
 seed=1234
 num_workers=0
 
-# If either arxiv_text_document.bin or arxiv_text_document.idx doesn't exist yet,
-# then downloads arxiv.jsonl and preprocesses the data.
-data_path="${megatron_deepspeed_dir}/dataset/arxiv_text_document"
-if [ ! -f "${data_path}.bin" ] || [ ! -f "${data_path}.idx" ]; then
-    echo "Either ${data_path}.bin or ${data_path}.idx doesn't exist yet, so download arxiv.jsonl and preprocess the data."
-    wget https://data.together.xyz/redpajama-data-1T/v1.0.0/arxiv/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl \
-        --directory-prefix ${megatron_deepspeed_dir}/dataset/
-    mv ${megatron_deepspeed_dir}/dataset/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl ${megatron_deepspeed_dir}/dataset/arxiv.jsonl
-    python ${megatron_deepspeed_dir}/tools/preprocess_data.py \
-        --tokenizer-type SentencePieceTokenizer \
-        --tokenizer-model ${input_tokenizer_file} \
-        --input ${megatron_deepspeed_dir}/dataset/arxiv.jsonl \
-        --output-prefix ${megatron_deepspeed_dir}/dataset/arxiv \
-        --dataset-impl mmap \
-        --workers $(grep -c ^processor /proc/cpuinfo) \
-        --append-eod
-else
-    echo "Both ${data_path}.bin and ${data_path}.idx already exist."
-fi
-echo ""
+# # If either arxiv_text_document.bin or arxiv_text_document.idx doesn't exist yet,
+# # then downloads arxiv.jsonl and preprocesses the data.
+# data_path="${megatron_deepspeed_dir}/dataset/arxiv_text_document"
+# if [ ! -f "${data_path}.bin" ] || [ ! -f "${data_path}.idx" ]; then
+#     echo "Either ${data_path}.bin or ${data_path}.idx doesn't exist yet, so download arxiv.jsonl and preprocess the data."
+#     wget https://data.together.xyz/redpajama-data-1T/v1.0.0/arxiv/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl \
+#         --directory-prefix ${megatron_deepspeed_dir}/dataset/
+#     mv ${megatron_deepspeed_dir}/dataset/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl ${megatron_deepspeed_dir}/dataset/arxiv.jsonl
+#     python ${megatron_deepspeed_dir}/tools/preprocess_data.py \
+#         --tokenizer-type SentencePieceTokenizer \
+#         --tokenizer-model ${input_tokenizer_file} \
+#         --input ${megatron_deepspeed_dir}/dataset/arxiv.jsonl \
+#         --output-prefix ${megatron_deepspeed_dir}/dataset/arxiv \
+#         --dataset-impl mmap \
+#         --workers $(grep -c ^processor /proc/cpuinfo) \
+#         --append-eod
+# else
+#     echo "Both ${data_path}.bin and ${data_path}.idx already exist."
+# fi
+# echo ""
 
 prescale_grad="true"
 jobname="gpt_${model_size}B_tok${train_tokens_in_billion}B"
