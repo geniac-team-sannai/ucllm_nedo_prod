@@ -4,8 +4,10 @@ set -e
 echo ""
 
 # Stores the directory paths as variables.
-ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_dev/train"
-megatron_deepspeed_dir="${ucllm_nedo_dev_train_dir}/Megatron-DeepSpeed"
+# ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_dev/train"
+ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_prod/train"
+# megatron_deepspeed_dir="${ucllm_nedo_dev_train_dir}/Megatron-DeepSpeed"
+megatron_deepspeed_dir="${HOME}/Megatron-DeepSpeed"
 echo "ucllm_nedo_dev_train_dir = ${ucllm_nedo_dev_train_dir}"
 echo "megatron_deepspeed_dir = ${megatron_deepspeed_dir}"
 echo ""
@@ -47,7 +49,8 @@ echo ""
 ###############################################################################
 ### Main configs
 ## GPT-3 models use 2K sequence length/context window
-seq_len=2048
+# seq_len=2048
+seq_len=256
 
 ## The "GPT-3 XXX" below are configs from GPT-3 paper
 ## https://arxiv.org/abs/2005.14165, choose based on
@@ -60,15 +63,25 @@ seq_len=2048
 ## We changed min_lr to a lower number (1.0e-6), which we found is able to
 ## provide better zero-shot eval results.
 
-## GPT-3 Small 125M
-model_size=0.125
-num_layers=12
-hidden_size=768
-num_attn_heads=12
-global_batch_size=256
+## GPT-3 TinyTiny (17.68M)
+model_size=0.01
+num_layers=6
+hidden_size=256
+num_attn_heads=4
+global_batch_size=128
 lr=6.0e-4
 min_lr=1.0e-6
 init_std=0.02
+
+## GPT-3 Small 125M
+#model_size=0.125
+#num_layers=12
+#hidden_size=768
+#num_attn_heads=12
+#global_batch_size=256
+#lr=6.0e-4
+#min_lr=1.0e-6
+#init_std=0.02
 
 ## GPT-3 Medium 350M
 # model_size=0.35
@@ -144,6 +157,7 @@ init_std=0.02
 ## The main termination condition, original GPT-3 paper trains for 300B tokens.
 train_tokens_in_billion=300
 train_tokens=$((${train_tokens_in_billion} * 1000 * 1000 * 1000))
+train_tokens=100
 
 ## train_samples is another termination condition and also affect the number of 
 ## data samples to be indexed. Since we want to reach the train_tokens
@@ -151,6 +165,7 @@ train_tokens=$((${train_tokens_in_billion} * 1000 * 1000 * 1000))
 ## so we just set this config large enough to make sure we have enough
 ## processed data and don't terminate by train_samples.
 train_samples=$(( 300 * 1000 * 1000 * 1000 * 2 / ${seq_len} ))
+train_samples=10
 
 ## Another wall-clock time termination condition in minutes. Set it large
 ## enough to avoid undesired early termination.
@@ -233,26 +248,26 @@ host="${HOSTNAME}"
 seed=1234
 num_workers=0
 
-# If either arxiv_text_document.bin or arxiv_text_document.idx doesn't exist yet,
-# then downloads arxiv.jsonl and preprocesses the data.
-data_path="${megatron_deepspeed_dir}/dataset/arxiv_text_document"
-if [ ! -f "${data_path}.bin" ] || [ ! -f "${data_path}.idx" ]; then
-    echo "Either ${data_path}.bin or ${data_path}.idx doesn't exist yet, so download arxiv.jsonl and preprocess the data."
-    wget https://data.together.xyz/redpajama-data-1T/v1.0.0/arxiv/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl \
-        --directory-prefix ${megatron_deepspeed_dir}/dataset/
-    mv ${megatron_deepspeed_dir}/dataset/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl ${megatron_deepspeed_dir}/dataset/arxiv.jsonl
-    python ${megatron_deepspeed_dir}/tools/preprocess_data.py \
-        --tokenizer-type SentencePieceTokenizer \
-        --tokenizer-model ${input_tokenizer_file} \
-        --input ${megatron_deepspeed_dir}/dataset/arxiv.jsonl \
-        --output-prefix ${megatron_deepspeed_dir}/dataset/arxiv \
-        --dataset-impl mmap \
-        --workers $(grep -c ^processor /proc/cpuinfo) \
-        --append-eod
-else
-    echo "Both ${data_path}.bin and ${data_path}.idx already exist."
-fi
-echo ""
+# # If either arxiv_text_document.bin or arxiv_text_document.idx doesn't exist yet,
+# # then downloads arxiv.jsonl and preprocesses the data.
+# data_path="${megatron_deepspeed_dir}/dataset/arxiv_text_document"
+# if [ ! -f "${data_path}.bin" ] || [ ! -f "${data_path}.idx" ]; then
+#     echo "Either ${data_path}.bin or ${data_path}.idx doesn't exist yet, so download arxiv.jsonl and preprocess the data."
+#     wget https://data.together.xyz/redpajama-data-1T/v1.0.0/arxiv/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl \
+#         --directory-prefix ${megatron_deepspeed_dir}/dataset/
+#     mv ${megatron_deepspeed_dir}/dataset/arxiv_024de5df-1b7f-447c-8c3a-51407d8d6732.jsonl ${megatron_deepspeed_dir}/dataset/arxiv.jsonl
+#     python ${megatron_deepspeed_dir}/tools/preprocess_data.py \
+#         --tokenizer-type SentencePieceTokenizer \
+#         --tokenizer-model ${input_tokenizer_file} \
+#         --input ${megatron_deepspeed_dir}/dataset/arxiv.jsonl \
+#         --output-prefix ${megatron_deepspeed_dir}/dataset/arxiv \
+#         --dataset-impl mmap \
+#         --workers $(grep -c ^processor /proc/cpuinfo) \
+#         --append-eod
+# else
+#     echo "Both ${data_path}.bin and ${data_path}.idx already exist."
+# fi
+# echo ""
 
 prescale_grad="true"
 jobname="gpt_${model_size}B_tok${train_tokens_in_billion}B"
@@ -282,6 +297,13 @@ mkdir -p ${deepspeed_config_dir}
 ###############################################################################
 data_options=" \
     --tokenizer-type SentencePieceTokenizer \
+    --tokenizer-model ${input_tokenizer_file} \
+    --data-path ${data_path} \
+    --data-impl mmap"
+
+## use HF tokenizer
+data_options=" \
+    --tokenizer-type HFTokenizer \
     --tokenizer-model ${input_tokenizer_file} \
     --data-path ${data_path} \
     --data-impl mmap"
@@ -328,7 +350,8 @@ megatron_options=" \
     --log-timers-to-tensorboard \
     --log-batch-size-to-tensorboard \
     --log-validation-ppl-to-tensorboard \
-    --tensorboard-dir ${tensorboard_path}"
+    --tensorboard-dir ${tensorboard_path} \
+    --untie-embeddings-and-output-weights"
 
 if [ "${activation_checkpoint}" = "true" ]; then
 megatron_options="${megatron_options} \
@@ -340,8 +363,10 @@ megatron_options="${megatron_options} \
     --log-optimizer-states-to-tensorboard"
 fi
 
+## config
 config_json="${deepspeed_config_dir}/ds_config_gbs${global_batch_size}_mbs${batch_size}_log${log_interval}_zero${zero_stage}.json"
-template_json="${megatron_deepspeed_dir}/examples_deepspeed/rebase/ds_config_gpt_TEMPLATE.json"
+# template_json="${megatron_deepspeed_dir}/examples_deepspeed/rebase/ds_config_gpt_TEMPLATE.json"
+template_json="./ds_config_gpt_TEMPLATE.json"
 sed "s/GBSIZE/${global_batch_size}/" ${template_json} \
     | sed "s/MBSIZE/${batch_size}/" \
     | sed "s/LOG_INTERVAL/${log_interval}/" \
@@ -384,7 +409,15 @@ if [[ $iteration -gt 0 ]]; then
     ds_ssh "echo $iteration_2 > $iteration_file_2"
 fi
 
-deepspeed ${megatron_deepspeed_dir}/pretrain_gpt.py \
+MASTER_ADDR=localhost
+MASTER_PORT=6000
+
+DISTRIBUTED_ARGS="
+    --master_addr $MASTER_ADDR \
+    --master_port $MASTER_PORT
+"
+
+deepspeed ${DISTRIBUTED_ARGS} ${megatron_deepspeed_dir}/pretrain_gpt.py \
     ${megatron_options} \
     ${data_options} \
     ${deepspeed_options} \
