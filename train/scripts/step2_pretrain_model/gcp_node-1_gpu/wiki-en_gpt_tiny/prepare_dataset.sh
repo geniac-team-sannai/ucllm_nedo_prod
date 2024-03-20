@@ -1,9 +1,9 @@
 #!/bin/bash
 megatron_deepspeed_dir="/home/ext_otomijuf_004_gmail_com/Megatron-DeepSpeed"
-mkdir -p ${megatron_deepspeed_dir}"/dataset/"
+mkdir -p ${megatron_deepspeed_dir}"/dataset/sample"
 
 jsonl_file="./train.jsonl"
-output_prefix=${megatron_deepspeed_dir}"/dataset/wiki"
+output_prefix=${megatron_deepspeed_dir}"/dataset/sample/wiki"
 tokenizer="microsoft/phi-2"
 
 python ${megatron_deepspeed_dir}/tools/preprocess_data.py \
