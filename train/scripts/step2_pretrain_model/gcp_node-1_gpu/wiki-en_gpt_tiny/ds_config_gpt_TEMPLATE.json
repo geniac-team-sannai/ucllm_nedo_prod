@@ -23,6 +23,6 @@
 
   "wandb": {
     "enabled": true,
-    "project": "megatron-deepspeed"
+    "project": "sample"
   }
 }
