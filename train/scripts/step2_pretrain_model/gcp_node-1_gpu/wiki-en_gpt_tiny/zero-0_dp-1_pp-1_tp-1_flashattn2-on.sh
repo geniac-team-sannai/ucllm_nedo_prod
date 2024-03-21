@@ -154,6 +154,7 @@ init_std=0.02
 ## The main termination condition, original GPT-3 paper trains for 300B tokens.
 train_tokens_in_billion=300
 train_tokens=$((${train_tokens_in_billion} * 1000 * 1000 * 1000))
+train_tokens=100
 
 ## train_samples is another termination condition and also affect the number of 
 ## data samples to be indexed. Since we want to reach the train_tokens
@@ -161,6 +162,7 @@ train_tokens=$((${train_tokens_in_billion} * 1000 * 1000 * 1000))
 ## so we just set this config large enough to make sure we have enough
 ## processed data and don't terminate by train_samples.
 train_samples=$(( 300 * 1000 * 1000 * 1000 * 2 / ${seq_len} ))
+train_samples=10
 
 ## Another wall-clock time termination condition in minutes. Set it large
 ## enough to avoid undesired early termination.
@@ -292,6 +294,13 @@ mkdir -p ${deepspeed_config_dir}
 ###############################################################################
 data_options=" \
     --tokenizer-type SentencePieceTokenizer \
+    --tokenizer-model ${input_tokenizer_file} \
+    --data-path ${data_path} \
+    --data-impl mmap"
+
+## use HF tokenizer
+data_options=" \
+    --tokenizer-type HFTokenizer \
     --tokenizer-model ${input_tokenizer_file} \
     --data-path ${data_path} \
     --data-impl mmap"
