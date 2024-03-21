@@ -71,14 +71,14 @@ min_lr=1.0e-6
 init_std=0.02
 
 ## GPT-3 Small 125M
-model_size=0.125
-num_layers=12
-hidden_size=768
-num_attn_heads=12
-global_batch_size=256
-lr=6.0e-4
-min_lr=1.0e-6
-init_std=0.02
+#model_size=0.125
+#num_layers=12
+#hidden_size=768
+#num_attn_heads=12
+#global_batch_size=256
+#lr=6.0e-4
+#min_lr=1.0e-6
+#init_std=0.02
 
 ## GPT-3 Medium 350M
 # model_size=0.35
