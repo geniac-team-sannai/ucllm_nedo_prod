@@ -5,7 +5,8 @@ echo ""
 
 # Stores the directory paths as variables.
 ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_dev/train"
-megatron_deepspeed_dir="${ucllm_nedo_dev_train_dir}/Megatron-DeepSpeed"
+# megatron_deepspeed_dir="${ucllm_nedo_dev_train_dir}/Megatron-DeepSpeed"
+megatron_deepspeed_dir="${HOME}/Megatron-DeepSpeed"
 echo "ucllm_nedo_dev_train_dir = ${ucllm_nedo_dev_train_dir}"
 echo "megatron_deepspeed_dir = ${megatron_deepspeed_dir}"
 echo ""
@@ -47,7 +48,8 @@ echo ""
 ###############################################################################
 ### Main configs
 ## GPT-3 models use 2K sequence length/context window
-seq_len=2048
+# seq_len=2048
+seq_len=256
 
 ## The "GPT-3 XXX" below are configs from GPT-3 paper
 ## https://arxiv.org/abs/2005.14165, choose based on
@@ -359,8 +361,10 @@ megatron_options="${megatron_options} \
     --log-optimizer-states-to-tensorboard"
 fi
 
+## config
 config_json="${deepspeed_config_dir}/ds_config_gbs${global_batch_size}_mbs${batch_size}_log${log_interval}_zero${zero_stage}.json"
-template_json="${megatron_deepspeed_dir}/examples_deepspeed/rebase/ds_config_gpt_TEMPLATE.json"
+# template_json="${megatron_deepspeed_dir}/examples_deepspeed/rebase/ds_config_gpt_TEMPLATE.json"
+template_json="./ds_config_gpt_TEMPLATE.json"
 sed "s/GBSIZE/${global_batch_size}/" ${template_json} \
     | sed "s/MBSIZE/${batch_size}/" \
     | sed "s/LOG_INTERVAL/${log_interval}/" \
@@ -403,7 +407,15 @@ if [[ $iteration -gt 0 ]]; then
     ds_ssh "echo $iteration_2 > $iteration_file_2"
 fi
 
-deepspeed ${megatron_deepspeed_dir}/pretrain_gpt.py \
+MASTER_ADDR=localhost
+MASTER_PORT=6000
+
+DISTRIBUTED_ARGS="
+    --master_addr $MASTER_ADDR \
+    --master_port $MASTER_PORT
+"
+
+deepspeed ${DISTRIBUTED_ARGS} ${megatron_deepspeed_dir}/pretrain_gpt.py \
     ${megatron_options} \
     ${data_options} \
     ${deepspeed_options} \
