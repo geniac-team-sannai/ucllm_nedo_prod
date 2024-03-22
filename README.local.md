@@ -40,8 +40,9 @@ sh prepare_dataset.sh
 事前にbrowserからwandbにログインして、projectを作っておく必要がある
 
 コンソールでwandbにログイン
-> # W&Bにログイン。
-> # https://wandb.ai/settings --> Danger Zone --> API keys --> APIキーをコピペ。
+
+> W&Bにログイン。
+> https://wandb.ai/settings --> Danger Zone --> API keys --> APIキーをコピペ。
 > (.venv) $ wandb login
 
 `~/ucllm_nedo_prod/train/scripts/step2_pretrain_model/gcp_node-1_gpu/wiki-en_gpt_tiny`にある`ds_config_gpt_TEMPLATE.json`のproject名を適宜修正
