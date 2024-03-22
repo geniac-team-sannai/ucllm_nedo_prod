@@ -4,7 +4,8 @@ set -e
 echo ""
 
 # Stores the directory paths as variables.
-ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_dev/train"
+# ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_dev/train"
+ucllm_nedo_dev_train_dir="${HOME}/ucllm_nedo_prod/train"
 # megatron_deepspeed_dir="${ucllm_nedo_dev_train_dir}/Megatron-DeepSpeed"
 megatron_deepspeed_dir="${HOME}/Megatron-DeepSpeed"
 echo "ucllm_nedo_dev_train_dir = ${ucllm_nedo_dev_train_dir}"
@@ -62,7 +63,7 @@ seq_len=256
 ## We changed min_lr to a lower number (1.0e-6), which we found is able to
 ## provide better zero-shot eval results.
 
-## GPT-3 TinyTiny (10M?)
+## GPT-3 TinyTiny (17.68M)
 model_size=0.01
 num_layers=6
 hidden_size=256
@@ -349,7 +350,8 @@ megatron_options=" \
     --log-timers-to-tensorboard \
     --log-batch-size-to-tensorboard \
     --log-validation-ppl-to-tensorboard \
-    --tensorboard-dir ${tensorboard_path}"
+    --tensorboard-dir ${tensorboard_path} \
+    --untie-embeddings-and-output-weights"
 
 if [ "${activation_checkpoint}" = "true" ]; then
 megatron_options="${megatron_options} \
