@@ -66,7 +66,7 @@ bash zero-0_dp-1_pp-1_tp-1_flashattn2-on.sh \
 `./output`以下にlogやtensorboardやcheckpointが出力されます
 
 
-## 以下注意点
+## 以下不明点。調査が必要
 ### master_addrとmaster_portについて
 以下のようなエラーが出ることがある。
 ```
