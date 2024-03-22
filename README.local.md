@@ -41,9 +41,9 @@ sh prepare_dataset.sh
 
 コンソールでwandbにログイン
 
-> W&Bにログイン。
-> https://wandb.ai/settings --> Danger Zone --> API keys --> APIキーをコピペ。
-> (.venv) $ wandb login
+> W&Bにログイン。  
+> https://wandb.ai/settings --> Danger Zone --> API keys --> APIキーをコピペ。  
+> (.venv) $ wandb login  
 
 `~/ucllm_nedo_prod/train/scripts/step2_pretrain_model/gcp_node-1_gpu/wiki-en_gpt_tiny`にある`ds_config_gpt_TEMPLATE.json`のproject名を適宜修正
 
