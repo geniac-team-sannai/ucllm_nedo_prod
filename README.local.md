@@ -37,7 +37,9 @@ sh prepare_dataset.sh
 
 
 ## 事前学習
-wandbにログイン
+事前にbrowserからwandbにログインして、projectを作っておく必要がある
+
+コンソールでwandbにログイン
 > # W&Bにログイン。
 > # https://wandb.ai/settings --> Danger Zone --> API keys --> APIキーをコピペ。
 > (.venv) $ wandb login
@@ -51,7 +53,7 @@ wandbにログイン
   }
 ```
 
-※ たぶんここに書けばwandbに連携されるはず
+※ たぶんここに書けばwandbに連携されるはず。データが飛ぶかは未確認
 
 事前学習の実行
 
@@ -63,7 +65,9 @@ bash zero-0_dp-1_pp-1_tp-1_flashattn2-on.sh \
 
 `./output`以下にlogやtensorboardやcheckpointが出力されます
 
-#### 変更点1
+
+## 以下注意点
+### master_addrとmaster_portについて
 以下のようなエラーが出ることがある。
 ```
 torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. The server socket has failed to bind to [::]:29500 (errno: 98 - Address already in use). The server socket has failed to bind to ?UNKNOWN? (errno: 98 - Address already in use).
@@ -82,7 +86,7 @@ DISTRIBUTED_ARGS="
 
 ※ マルチノードのときに使うやつ？変更の影響は不明
 
-#### 変更点2
+### 事前学習で使うtokneinzer
 huggingfaceにあるphi-2のtokenizerを使えるように、`--tokenizer-type HFTokenizer`としてます。
 
 ```
@@ -96,8 +100,8 @@ data_options=" \
 ※ 事前学習のどこでtokenizerを使ってるか調査
 
 
-#### 変更点3
-モデルサイズの変更
+### モデルサイズの変更
+とりあえずで小さいと思われるサイズにしてます
 
 ```
 ## GPT-3 TinyTiny (10M?)
@@ -113,7 +117,7 @@ init_std=0.02
 
 ※ 学習可能なパラメタ数を確認する必要がある。すでに標準出力されているのを見落としてるかも
 
-#### 変更点4
+### deepspeedのconfigのtemplateファイル
 deepspeedのconfigのtemplateファイルを新たに作成してます。
 
 元のpipelineのコードでは、megatron_deepspeedにあるものを使ってるようです。
