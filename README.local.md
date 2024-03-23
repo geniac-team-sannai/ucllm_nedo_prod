@@ -9,6 +9,9 @@ HOME直下に2つのrepositoryを配置する想定です
 ```
 git clone https://github.com/geniac-team-sannai/ucllm_nedo_prod.git
 git checkout dev
+
+git clone https://github.com/geniac-team-sannai/Megatron-DeepSpeed.git
+git checkout dev
 ```
 
 ## jsonlの作成
